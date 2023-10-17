@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=500" />
+    <meta
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+      name="viewport"
+    />
+    <title>2D 设置</title>
+    <script>
+      var d = document;
+      var loc = false,
+        locip;
+      function H() {
+        window.open("https://kno.wled.ge/features/2D");
+      }
+      function B() {
+        window.open("/settings", "_self");
+      }
+      function gId(n) {
+        return d.getElementById(n);
+      }
+      // https://www.educative.io/edpresso/how-to-dynamically-load-a-js-file-in-javascript
+      function loadJS(FILE_URL, async = true) {
+        let scE = d.createElement("script");
+        scE.setAttribute("src", FILE_URL);
+        scE.setAttribute("type", "text/javascript");
+        scE.setAttribute("async", async);
+        d.body.appendChild(scE);
+        // success event
+        scE.addEventListener("load", () => {
+          //console.log("File loaded");
+          GetV();
+          UI();
+        });
+        // error event
+        scE.addEventListener("error", (ev) => {
+          console.log("Error on loading file", ev);
+          alert(
+            "Loading of configuration script failed.\nIncomplete page data!"
+          );
+        });
+      }
+      function S() {
+        if (window.location.protocol == "file:") {
+          loc = true;
+          locip = localStorage.getItem("locIp");
+          if (!locip) {
+            locip = prompt("File Mode. Please enter WLED IP!");
+            localStorage.setItem("locIp", locip);
+          }
+        }
+        var url = (loc ? `http://${locip}` : "") + "/settings/s.js?p=10";
+        loadJS(url, false); // If we set async false, file is loaded and executed, then next statement is processed
+      }
+
+      var maxPanels = 64;
+      function UI(change = false) {
+        if (gId("somp").value === "0") {
+          gId("mpdiv").style.display = "none";
+          resetPanels();
+          return;
+        }
+
+        gId("mpdiv").style.display = "block";
+        maxPanels = parseInt(d.Sf.MPH.value) * parseInt(d.Sf.MPV.value);
+
+        let i = gId("panels").children.length;
+        if (i < maxPanels) for (let j = i; j < maxPanels; j++) addPanel(j);
+        if (i > maxPanels) for (let j = i; j > maxPanels; j--) remPanel();
+        //btnPanel(gId("panels").children.length);
+      }
+
+      function addPanels() {
+        let h = parseInt(d.Sf.MPH.value);
+        let v = parseInt(d.Sf.MPV.value);
+        for (let i = 0; i < h * v; i++) addPanel(i);
+      }
+
+      function addPanel(i = 0) {
+        let p = gId("panels");
+        if (p.children.length >= maxPanels) return;
+        let b = `<div id="pnl${i}">${
+          i === 0 ? "" : '<hr class="sml">'
+        }灯板 ${i}<br>1<sup>st</sup> LED: <select name="P${i}B">
+	<option value="0">顶部</option>
+	<option value="1">底部</option>
+</select><select name="P${i}R">
+	<option value="0">左</option>
+	<option value="1">右</option>
+</select><br>
+方向: <select name="P${i}V">
+	<option value="0">横向</option>
+	<option value="1">竖向</option>
+</select><br>
+蛇形: <input type="checkbox" name="P${i}S"></div>`;
+        p.insertAdjacentHTML("beforeend", b);
+      }
+
+      function remPanel() {
+        let p = gId("panels").children;
+        var i = p.length;
+        if (i <= 1) return;
+        p[i - 1].remove();
+      }
+
+      function resetPanels() {
+        d.Sf.MPH.value = 1;
+        d.Sf.MPV.value = 1;
+        for (let e of gId("panels").children) e.remove();
+      }
+
+      function btnPanel(i) {
+        gId("pnl_add").style.display = i < maxPanels ? "inline" : "none";
+        gId("pnl_rem").style.display = i > 1 ? "inline" : "none";
+      }
+    </script>
+    <style>
+      @import url("style.css");
+    </style>
+  </head>
+  <body onload="S()">
+    <form id="form_s" name="Sf" method="post">
+      <div class="toprow">
+        <div class="helpB"><button type="button" onclick="H()">?</button></div>
+        <button type="button" onclick="B()">返回</button
+        ><button type="submit">保存</button>
+        <hr />
+      </div>
+      <h2>2D 设置</h2>
+      灯带或者矩阵:
+      <select id="somp" name="SOMP" onchange="resetPanels();addPanels();UI();">
+        <option value="0">1D 灯带</option>
+        <option value="1">2D 矩阵</option></select
+      ><br />
+      <div id="mpdiv" style="display: none">
+        <h3>矩阵设置</h3>
+        灯板尺寸 (宽x高):
+        <input name="PW" type="number" min="1" max="128" value="8" /> x
+        <input name="PH" type="number" min="1" max="128" value="8" /><br />
+        水平灯板:
+        <input
+          name="MPH"
+          type="number"
+          min="1"
+          max="8"
+          value="1"
+          oninput="UI()"
+        />
+        垂直灯板:
+        <input
+          name="MPV"
+          type="number"
+          min="1"
+          max="8"
+          value="1"
+          oninput="UI()"
+        /><br />
+        1<sup>st</sup> LED:
+        <select name="PB">
+          <option value="0">顶部</option>
+          <option value="1">底部</option></select
+        ><select name="PR">
+          <option value="0">左</option>
+          <option value="1">右</option></select
+        ><br />
+        方向:
+        <select name="PV">
+          <option value="0">横向</option>
+          <option value="1">竖向</option></select
+        ><br />
+        蛇形: <input type="checkbox" name="PS" />
+        <hr class="sml" />
+        <i>
+          矩阵是由1个或多个相同尺寸的LED灯板组成。<br />
+          灯板应该从左上到右下顺序排列，从左边的灯板编号开始(如果调换了位置，则为顶部).<br />
+          每个灯板可以有不同的LED方向和或起点或布局.</i
+        ><br />
+        <hr class="sml" />
+        <h3>LED灯板布局</h3>
+        <div id="panels"></div>
+      </div>
+      <hr />
+      <button type="button" onclick="B()">返回</button
+      ><button type="submit">保存</button>
+    </form>
+  </body>
+</html>

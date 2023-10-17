@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta name="viewport" content="width=500" />
+    <meta
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+      name="viewport"
+    />
+    <meta charset="utf-8" />
+    <title>同步设置</title>
+    <script>
+      var d = document;
+      var loc = false,
+        locip;
+      function gId(s) {
+        return d.getElementById(s);
+      }
+      function toggle(el) {
+        gId(el).classList.toggle("hide");
+        gId("No" + el).classList.toggle("hide");
+      }
+      function H() {
+        window.open("https://kno.wled.ge/interfaces/udp-notifier/");
+      }
+      function B() {
+        window.open("/settings", "_self");
+      }
+      function adj() {
+        if (d.Sf.DI.value == 6454) {
+          if (d.Sf.EU.value == 1) d.Sf.EU.value = 0;
+        } else if (d.Sf.DI.value == 5568) {
+          if (d.Sf.DA.value == 0) d.Sf.DA.value = 1;
+          if (d.Sf.EU.value == 0) d.Sf.EU.value = 1;
+        }
+      }
+      // https://www.educative.io/edpresso/how-to-dynamically-load-a-js-file-in-javascript
+      function loadJS(FILE_URL, async = true) {
+        let scE = d.createElement("script");
+        scE.setAttribute("src", FILE_URL);
+        scE.setAttribute("type", "text/javascript");
+        scE.setAttribute("async", async);
+        d.body.appendChild(scE);
+        // success event
+        scE.addEventListener("load", () => {
+          //console.log("File loaded");
+          GetV();
+          SetVal();
+        });
+        // error event
+        scE.addEventListener("error", (ev) => {
+          console.log("Error on loading file", ev);
+          alert(
+            "Loading of configuration script failed.\nIncomplete page data!"
+          );
+        });
+      }
+      function FC() {
+        for (j = 0; j < 8; j++) {
+          gId("G" + (j + 1)).checked = (gId("GS").value >> j) & 1;
+          gId("R" + (j + 1)).checked = (gId("GR").value >> j) & 1;
+        }
+      }
+      function GC() {
+        var a = 0,
+          b = 0;
+
+        var m = 1;
+        for (j = 0; j < 8; j++) {
+          a += gId("G" + (j + 1)).checked * m;
+          b += gId("R" + (j + 1)).checked * m;
+          m *= 2;
+        }
+        gId("GS").value = a;
+        gId("GR").value = b;
+      }
+      function SP() {
+        var p = d.Sf.DI.value;
+        gId("xp").style.display = p > 0 ? "none" : "block";
+        if (p > 0) d.Sf.EP.value = p;
+      }
+      function SetVal() {
+        switch (parseInt(d.Sf.EP.value)) {
+          case 5568:
+            d.Sf.DI.value = 5568;
+            break;
+          case 6454:
+            d.Sf.DI.value = 6454;
+            break;
+          case 4048:
+            d.Sf.DI.value = 4048;
+            break;
+        }
+        SP();
+        FC();
+      }
+      function S() {
+        if (window.location.protocol == "file:") {
+          loc = true;
+          locip = localStorage.getItem("locIp");
+          if (!locip) {
+            locip = prompt("File Mode. Please enter WLED IP!");
+            localStorage.setItem("locIp", locip);
+          }
+        }
+        var url = (loc ? `http://${locip}` : "") + "/settings/s.js?p=4";
+        loadJS(url, false); // If we set async false, file is loaded and executed, then next statement is processed
+      }
+    </script>
+    <style>
+      @import url("style.css");
+    </style>
+  </head>
+  <body onload="S()">
+    <form id="form_s" name="Sf" method="post" onsubmit="GC()">
+      <div class="toprow">
+        <div class="helpB"><button type="button" onclick="H()">?</button></div>
+        <button type="button" onclick="B()">Back</button
+        ><button type="submit">Save</button>
+        <hr />
+      </div>
+      <h2>同步设置</h2>
+      <h3>WLED广播</h3>
+      UDP 端口:
+      <input
+        name="UP"
+        type="number"
+        min="1"
+        max="65535"
+        class="d5"
+        required
+      /><br />
+      2nd 端口:
+      <input
+        name="U2"
+        type="number"
+        min="1"
+        max="65535"
+        class="d5"
+        required
+      /><br />
+      <h3>同步分组</h3>
+      <input
+        name="GS"
+        id="GS"
+        type="number"
+        style="display: none"
+      /><!-- hidden inputs for bitwise group checkboxes -->
+      <input name="GR" id="GR" type="number" style="display: none" />
+      <table style="margin: 0 auto">
+        <tr>
+          <td></td>
+          <td>1</td>
+          <td>2</td>
+          <td>3</td>
+          <td>4</td>
+          <td>5</td>
+          <td>6</td>
+          <td>7</td>
+          <td>8</td>
+        </tr>
+        <tr>
+          <td>发送:</td>
+          <td><input type="checkbox" id="G1" name="G1" /></td>
+          <td><input type="checkbox" id="G2" name="G2" /></td>
+          <td><input type="checkbox" id="G3" name="G3" /></td>
+          <td><input type="checkbox" id="G4" name="G4" /></td>
+          <td><input type="checkbox" id="G5" name="G5" /></td>
+          <td><input type="checkbox" id="G6" name="G6" /></td>
+          <td><input type="checkbox" id="G7" name="G7" /></td>
+          <td><input type="checkbox" id="G8" name="G8" /></td>
+        </tr>
+        <tr>
+          <td>接收:</td>
+          <td><input type="checkbox" id="R1" name="R1" /></td>
+          <td><input type="checkbox" id="R2" name="R2" /></td>
+          <td><input type="checkbox" id="R3" name="R3" /></td>
+          <td><input type="checkbox" id="R4" name="R4" /></td>
+          <td><input type="checkbox" id="R5" name="R5" /></td>
+          <td><input type="checkbox" id="R6" name="R6" /></td>
+          <td><input type="checkbox" id="R7" name="R7" /></td>
+          <td><input type="checkbox" id="R8" name="R8" /></td>
+        </tr>
+      </table>
+      <br />
+      接收: <nowrap><input type="checkbox" name="RB" />亮度,</nowrap>
+      <nowrap><input type="checkbox" name="RC" />颜色,</nowrap>
+      <nowrap>和 <input type="checkbox" name="RX" />效果</nowrap><br />
+      <input type="checkbox" name="SO" /> 分段选项,
+      <input type="checkbox" name="SG" /> bounds<br />
+      直接更改时发送通知: <input type="checkbox" name="SD" /><br />
+      按下按钮或接受到红外信号发送通知: <input type="checkbox" name="SB" /><br />
+      发送Alexa通知: <input type="checkbox" name="SA" /><br />
+      发送飞利浦Hue变更通知:<input type="checkbox" name="SH" /><br />
+      发送宏通知: <input type="checkbox" name="SM" /><br />
+      UDP数据包重发:<input
+        name="UR"
+        type="number"
+        min="0"
+        max="30"
+        class="d5"
+        required
+      /><br /><br />
+      <i>应用更改需要重新启动. </i>
+      <hr class="sml" />
+      <h3>实例列表</h3>
+      启用实例列表: <input type="checkbox" name="NL" /><br />
+      使此实例可被发现: <input type="checkbox" name="NB" />
+      <hr class="sml" />
+      <h3>实时</h3>
+      实时接收UDP: <input type="checkbox" name="RD" /><br />
+      只使用主段: <input type="checkbox" name="MO" /><br /><br />
+      <i>网络DMX输入</i><br />
+      类型:
+      <select name="DI" onchange="SP(); adj();">
+        <option value="5568">E1.31 (sACN)</option>
+        <option value="6454">Art-Net</option>
+        <option value="0" selected>自定义端口</option></select
+      ><br />
+      <div id="xp">
+        端口:
+        <input
+          name="EP"
+          type="number"
+          min="1"
+          max="65535"
+          value="5568"
+          class="d5"
+          required
+        /><br />
+      </div>
+      组播: <input type="checkbox" name="EM" /><br />
+      Start universe:
+      <input name="EU" type="number" min="0" max="63999" required /><br />
+      <i>需要重新启动.</i> Check out
+      <a href="https://github.com/LedFx/LedFx" target="_blank">LedFx</a>!<br />
+      跳过无效数据包: <input type="checkbox" name="ES" /><br />
+      DMX起始地址:
+      <input name="DA" type="number" min="1" max="510" required /><br />
+      DMX模式:
+      <select name="DM">
+        <option value="0">禁用</option>
+        <option value="1">Single RGB</option>
+        <option value="2">Single DRGB</option>
+        <option value="3">Effect</option>
+        <option value="4">Multi RGB</option>
+        <option value="5">Dimmer + Multi RGB</option>
+        <option value="6">Multi RGBW</option></select
+      ><br />
+      <a href="https://kno.wled.ge/interfaces/e1.31-dmx/" target="_blank"
+        >E1.31 info</a
+      ><br />
+      超时:
+      <input name="ET" type="number" min="1" max="65000" required /> ms<br />
+      最大亮度: <input type="checkbox" name="FB" /><br />
+      禁用实时 gamma: <input type="checkbox" name="RG" /><br />
+      实时LED偏移:
+      <input name="WO" type="number" min="-255" max="255" required />
+      <hr class="sml" />
+      <h3>Alexa语音助手</h3>
+      <div id="NoAlexa" class="hide">
+        <em style="color: #fa0">此固件版本不支持Alexa.<br /></em><br />
+      </div>
+      <div id="Alexa">
+        模拟Alexa设备: <input type="checkbox" name="AL" /><br />
+        Alexa调用名称: <input type="text" name="AI" maxlength="32" /><br />
+        还可以模拟设备调用
+        <input name="AP" type="number" class="s" min="0" max="9" required />
+        预设<br /><br />
+      </div>
+      <hr class="sml" />
+      <div style="color: #fa0">
+        &#9888;
+        <b
+          >Blynk, MQTT and Hue 同步所有连接到外部主机!<br />
+          这可能会影响WLED的响应能力.</b
+        ><br />
+      </div>
+      为了达到最佳效果，一次只能使用其中一种服务.<br />
+      (或者，连接第二个ESP并使用UDP同步)
+      <hr class="sml" />
+      <h3>Blynk</h3>
+      <div id="NoBlynk" class="hide">
+        <em style="color: #fa0">此固件版本不支持Blynk<br /></em>
+      </div>
+      <div id="Blynk">
+        主机: <input type="text" name="BH" maxlength="32" /> 端口:
+        <input
+          name="BP"
+          type="number"
+          min="1"
+          max="65535"
+          value="80"
+          class="d5"
+        /><br />
+        设备认证令牌: <input name="BK" maxlength="33" /><br />
+        <i>清除令牌字段以禁用。 </i
+        ><a href="https://kno.wled.ge/interfaces/blynk/" target="_blank"
+          >设置信息</a
+        >
+      </div>
+      <h3>MQTT</h3>
+      <div id="NoMQTT" class="hide">
+        <em style="color: #fa0">此固件版本不支持MQTT.<br /></em>
+      </div>
+      <div id="MQTT">
+        启用MQTT: <input type="checkbox" name="MQ" /><br />
+        服务器: <input type="text" name="MS" maxlength="32" /> 端口:
+        <input
+          name="MQPORT"
+          type="number"
+          min="1"
+          max="65535"
+          class="d5"
+        /><br />
+        <b
+          >MQTT凭据是通过不安全的连接发送的.<br />
+          永远不要将MQTT密码用于其他服务!</b
+        ><br />
+        用户名: <input type="text" name="MQUSER" maxlength="40" /><br />
+        密码: <input type="password" name="MQPASS" maxlength="64" /><br />
+        客户端 ID: <input type="text" name="MQCID" maxlength="40" /><br />
+        设备订阅: <input type="text" name="MD" maxlength="32" /><br />
+        分组订阅: <input type="text" name="MG" maxlength="32" /><br />
+        按下按钮发布: <input type="checkbox" name="BM" /><br />
+        <i>应用更改需要重新启动. </i
+        ><a href="https://kno.wled.ge/interfaces/mqtt/" target="_blank"
+          >MQTT 信息</a
+        >
+      </div>
+      <h3>飞利浦 Hue</h3>
+      <div id="NoHue" class="hide">
+        <em style="color: #fa0">此固件版本不支持飞利浦Hue.<br /></em>
+      </div>
+      <div id="Hue">
+        <i>您可以在飞利浦hue应用程序的“关于”部分中找到设备。</i><br />
+        <i>(这部分不熟悉，未作修改)。</i><br />
+        Poll Hue light <input name="HL" type="number" min="1" max="99" /> every
+        <input name="HI" type="number" min="100" max="65000" /> ms:
+        <input type="checkbox" name="HP" /><br />
+        Then, receive <input type="checkbox" name="HO" /> On/Off,
+        <input type="checkbox" name="HB" /> Brightness, and
+        <input type="checkbox" name="HC" /> Color<br />
+        Hue Bridge IP:<br />
+        <input name="H0" type="number" class="s" min="0" max="255" /> .
+        <input name="H1" type="number" class="s" min="0" max="255" /> .
+        <input name="H2" type="number" class="s" min="0" max="255" /> .
+        <input name="H3" type="number" class="s" min="0" max="255" /><br />
+        <b
+          >Press the pushlink button on the bridge, after that save this
+          page!</b
+        ><br />
+        (when first connecting)<br />
+        Hue status: <span class="sip"> Disabled in this build </span>
+      </div>
+      <h3>串口</h3>
+      波特率:
+      <select name="BD">
+        <option value="1152">115200</option>
+        <option value="2304">230400</option>
+        <option value="4608">460800</option>
+        <option value="5000">500000</option>
+        <option value="5760">576000</option>
+        <option value="9216">921600</option>
+        <option value="10000">1000000</option>
+        <option value="15000">1500000</option></select
+      ><br />
+      <i>保持在115200使用即可</i>
+      <hr />
+      <button type="button" onclick="B()">返回</button
+      ><button type="submit">保存</button>
+    </form>
+  </body>
+</html>

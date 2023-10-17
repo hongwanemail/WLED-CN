@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta name="viewport" content="width=500">
+  <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport"/>
+  <meta charset="utf-8">
+  <title>DMX 设置</title>
+<script>
+  var d=document;
+  var loc = false, locip;
+  function H(){window.open("https://github.com/Aircoookie/WLED/wiki/DMX");}
+  function B(){window.history.back();}
+  function GCH(num) {
+    d.getElementById('dmxchannels').innerHTML += "";
+    for (i=0;i<num;i++) {
+      d.getElementById('dmxchannels').innerHTML += "<span id=CH" + (i+1) + "s >通道 " + (i+1) + ": <select name=CH" + (i+1) + " id=\"CH" + (i+1) + "\"><option value=0>Set to 0</option><option value=1>Red</option><option value=2>Green</option><option value=3>Blue</option><option value=4>White</option><option value=5>Shutter (Brightness)</option><option value=6>Set to 255</option></select></span><br />\n";
+    }
+  }
+  function mMap(){
+    numCh=document.Sf.CN.value;
+    numGap=document.Sf.CG.value;
+    if (parseInt(numCh)>parseInt(numGap)) {
+      d.getElementById("gapwarning").style.display="block";
+    } else {
+      d.getElementById("gapwarning").style.display="none";
+    }
+    for (i=0;i<15;i++) {
+      if (i>=numCh) {
+        d.getElementById("CH"+(i+1) + "s").style.opacity = "0.5";
+        d.getElementById("CH"+(i+1)).disabled = true;
+        
+      } else {
+        d.getElementById("CH"+(i+1) + "s").style.opacity = "1";
+        d.getElementById("CH"+(i+1)).disabled = false;
+      }
+    }
+  }
+  // https://www.educative.io/edpresso/how-to-dynamically-load-a-js-file-in-javascript
+  function loadJS(FILE_URL, async = true) {
+    let scE = d.createElement("script");
+    scE.setAttribute("src", FILE_URL);
+    scE.setAttribute("type", "text/javascript");
+    scE.setAttribute("async", async);
+    d.body.appendChild(scE);
+    // success event 
+    scE.addEventListener("load", () => {
+      //console.log("File loaded");
+      GCH(15);GetV();mMap();
+    });
+    // error event
+    scE.addEventListener("error", (ev) => {
+      console.log("Error on loading file", ev);
+      alert("Loading of configuration script failed.\nIncomplete page data!");
+    });
+  }
+  function S(){
+    if (window.location.protocol == "file:") {
+      loc = true;
+      locip = localStorage.getItem('locIp');
+      if (!locip) {
+        locip = prompt("File Mode. Please enter WLED IP!");
+        localStorage.setItem('locIp', locip);
+      }
+    }
+    var url = (loc?`http://${locip}`:'') + '/settings/s.js?p=7';
+    loadJS(url, false);	// If we set async false, file is loaded and executed, then next statement is processed
+  }
+</script>
+<style>@import url("style.css");</style>
+</head>
+<body onload="S()">
+<form id="form_s" name="Sf" method="post">
+<div class="toprow">
+<div class="helpB"><button type="button" onclick="H()">?</button></div>
+<button type="button" onclick="B()">返回</button><button type="submit">保存</button><hr>
+</div>
+<h2>如果你的主板支持DMX，可以配置以下内容</h2><!-- TODO: Change to something less-meme-related //-->
+
+代理 <input name=PU type=number min=0 max=63999 required> 从 E1.31 to DMX (0=禁用)<br>
+<i>设置E1.31会禁用LED数据输出到下面配置的DMX</i><br><br>
+<i>DMX512灯数量取自LED配置页面</i><br>
+
+每个DMX512灯的通道(最多15个): <input type="number" min="1" max="15" name="CN" maxlength="2" onchange="mMap();"><br />
+开始通道: <input type="number" min="1" max="512" name="CS" maxlength="2"><br />
+LED之间的间距: <input type="number" min="1" max="512" name="CG" maxlength="2" onchange="mMap();"> [ <a href="javascript:alert('if set to 10, first fixture will start at 10,\nsecond will start at 20 etc.\nRegardless of the channel count.\nMakes memorizing channel numbers easier.');">info</a> ]<br>
+<div id="gapwarning" style="color: orange; display: none;">警告:LED间距低于每个DMX512灯的通道。<br />这会导致数据重叠。</div>
+<button type="button" onclick="location.href='/dmxmap';">DMX 地图</button><br>
+DMX512灯第一颗LED（默认0）: <input type="number" min="0" max="1500" name="SL">
+<h3>通道功能</h3>
+<div id="dmxchannels"></div>
+<hr><button type="button" onclick="B()">返回</button><button type="submit">保存</button>
+</form>
+</body>
+</html>
